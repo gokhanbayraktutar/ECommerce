@@ -1,0 +1,76 @@
+﻿using ECommerce.Application.Interfaces;
+using ECommerce.Core.Entities;
+using ECommerce.Core.Interfaces;
+
+namespace ECommerce.Application.Services;
+
+public class CartService : ICartService
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CartService(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Cart> GetCartByUserIdAsync(int userId)
+    {
+        var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId);
+        var cart = carts.FirstOrDefault();
+        if (cart != null)
+        {
+            // CartItems ve ürünleri yükle
+            foreach (var item in cart.CartItems)
+            {
+                item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+            }
+        }
+        return cart;
+    }
+
+    public async Task AddItemAsync(int userId, int productId, int quantity)
+    {
+        var cart = await GetCartByUserIdAsync(userId);
+        if (cart == null)
+        {
+            cart = new Cart { UserId = userId, CartItems = new List<CartItem>() };
+            await _unitOfWork.Carts.AddAsync(cart);
+            await _unitOfWork.CommitAsync();
+        }
+
+        var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+        if (existingItem != null)
+        {
+            existingItem.Quantity += quantity;
+        }
+        else
+        {
+            cart.CartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
+        }
+
+        await _unitOfWork.CommitAsync();
+    }
+
+    public async Task RemoveItemAsync(int userId, int cartItemId)
+    {
+        var cart = await GetCartByUserIdAsync(userId);
+        var item = cart?.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+        if (item != null)
+        {
+            _unitOfWork.CartItems.Delete(item);
+            await _unitOfWork.CommitAsync();
+        }
+    }
+
+    public async Task UpdateItemQuantityAsync(int userId, int cartItemId, int quantity)
+    {
+        var cart = await GetCartByUserIdAsync(userId);
+        var item = cart?.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+        if (item != null)
+        {
+            item.Quantity = quantity;
+            _unitOfWork.CartItems.Update(item);
+            await _unitOfWork.CommitAsync();
+        }
+    }
+}
