@@ -15,6 +15,6 @@ namespace ECommerce.Core.Entities
         public string? Email { get; set; }
 
         // Bir kullanıcının tek sepeti olur
-        public Cart Cart { get; set; }
+        public Cart? Cart { get; set; } 
     }
 }

@@ -12,6 +12,7 @@ namespace ECommerce.Core.Entities
 
         // User ilişkisi (1-1)
         public int UserId { get; set; }
+        public string OrderStatus { get; set; }
         public User User { get; set; }
 
         // Sepet içeriği
