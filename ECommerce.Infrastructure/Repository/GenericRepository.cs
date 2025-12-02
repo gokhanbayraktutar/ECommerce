@@ -29,10 +29,8 @@ public class GenericRepository<T> : IRepository<T> where T : class
 
     public void Update(T entity) => _dbSet.Update(entity);
 
-    public void Remove(T entity) => _dbSet.Remove(entity);
-
     public void Delete(T entity)
     {
-        throw new NotImplementedException();
+        _dbSet.Remove(entity);
     }
 }

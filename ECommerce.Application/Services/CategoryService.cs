@@ -28,4 +28,6 @@ public class CategoryService : ICategoryService
     public async Task<Category> GetByIdAsync(int id) => await _unitOfWork.Categories.GetByIdAsync(id);
 
     public async Task UpdateAsync(Category category) => _unitOfWork.Categories.Update(category);
+
+   
 }

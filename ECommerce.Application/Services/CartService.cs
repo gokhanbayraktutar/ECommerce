@@ -13,39 +13,57 @@ public class CartService : ICartService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Cart> GetCartByUserIdAsync(int userId)
+
+public async Task<Cart> GetCartByUserIdAsync(int userId)
+{
+    var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId && c.OrderStatus == "Sepette");
+    var cart = carts.FirstOrDefault();
+
+    if (cart != null)
     {
-        var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId);
-        var cart = carts.FirstOrDefault();
-        if (cart != null)
+        // CartItems ve ürünleri tek tek yükle
+        cart.CartItems = (await _unitOfWork.CartItems.FindAsync(ci => ci.CartId == cart.Id)).ToList();
+
+        foreach (var item in cart.CartItems)
         {
-            // CartItems ve ürünleri yükle
-            foreach (var item in cart.CartItems)
-            {
-                item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-            }
+            item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
         }
-        return cart;
     }
 
-    public async Task AddItemAsync(int userId, int productId, int quantity)
+    return cart;
+}
+
+
+public async Task AddItemAsync(int userId, int productId, int quantity)
     {
         var cart = await GetCartByUserIdAsync(userId);
+
         if (cart == null)
         {
-            cart = new Cart { UserId = userId, CartItems = new List<CartItem>() };
+            cart = new Cart
+            {
+                UserId = userId,
+                OrderStatus = "Sepette",
+                CartItems = new List<CartItem>()
+            };
             await _unitOfWork.Carts.AddAsync(cart);
             await _unitOfWork.CommitAsync();
         }
 
         var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+
         if (existingItem != null)
         {
             existingItem.Quantity += quantity;
+            _unitOfWork.CartItems.Update(existingItem);
         }
         else
         {
-            cart.CartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
+            cart.CartItems.Add(new CartItem
+            {
+                ProductId = productId,
+                Quantity = quantity
+            });
         }
 
         await _unitOfWork.CommitAsync();
@@ -55,6 +73,7 @@ public class CartService : ICartService
     {
         var cart = await GetCartByUserIdAsync(userId);
         var item = cart?.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+
         if (item != null)
         {
             _unitOfWork.CartItems.Delete(item);
@@ -66,6 +85,7 @@ public class CartService : ICartService
     {
         var cart = await GetCartByUserIdAsync(userId);
         var item = cart?.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+
         if (item != null)
         {
             item.Quantity = quantity;

@@ -23,4 +23,10 @@ public class ProductService : IProductService
     public async Task<IEnumerable<Product>> GetAllAsync() => await _unitOfWork.Products.GetAllAsync();
     public async Task<Product> GetByIdAsync(int id) => await _unitOfWork.Products.GetByIdAsync(id);
     public async Task UpdateAsync(Product product) => _unitOfWork.Products.Update(product);
+
+    public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId)
+    {
+        var products = await _unitOfWork.Products.FindAsync(p => p.CategoryId == categoryId);
+        return products;
+    }
 }

@@ -44,4 +44,13 @@ public class ProductsController : ControllerBase
         await _productService.DeleteAsync(id);
         return NoContent();
     }
+
+    [HttpGet("category/{categoryId}")]
+    public async Task<IActionResult> GetByCategory(int categoryId)
+    {
+        var products = await _productService.GetByCategoryIdAsync(categoryId);
+        return Ok(products);
+    }
+
+
 }
