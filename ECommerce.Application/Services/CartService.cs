@@ -34,8 +34,9 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
 }
 
 
-public async Task AddItemAsync(int userId, int productId, int quantity)
+    public async Task<Cart> AddItemAsync(int userId, int productId, int quantity)
     {
+        // Mevcut sepeti getir (cartItems ve ürünleri dahil)
         var cart = await GetCartByUserIdAsync(userId);
 
         if (cart == null)
@@ -46,28 +47,46 @@ public async Task AddItemAsync(int userId, int productId, int quantity)
                 OrderStatus = "Sepette",
                 CartItems = new List<CartItem>()
             };
+
             await _unitOfWork.Carts.AddAsync(cart);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(); // CartId oluşsun
         }
 
+        // Sepette aynı üründen varsa miktarı artır
         var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
 
         if (existingItem != null)
         {
             existingItem.Quantity += quantity;
-            _unitOfWork.CartItems.Update(existingItem);
+            // EF tracking var, Update gerek yok
         }
         else
         {
-            cart.CartItems.Add(new CartItem
+            var newItem = new CartItem
             {
+                CartId = cart.Id,
                 ProductId = productId,
                 Quantity = quantity
-            });
+            };
+
+            await _unitOfWork.CartItems.AddAsync(newItem);
         }
 
         await _unitOfWork.CommitAsync();
+
+        // Güncel sepeti tekrar yükle, ürünleri dahil et
+        cart.CartItems = (await _unitOfWork.CartItems.FindAsync(ci => ci.CartId == cart.Id)).ToList();
+
+        foreach (var item in cart.CartItems)
+        {
+            item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+        }
+
+        return cart;
     }
+
+
+
 
     public async Task RemoveItemAsync(int userId, int cartItemId)
     {

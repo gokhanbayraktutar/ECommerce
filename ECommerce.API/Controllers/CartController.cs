@@ -27,9 +27,28 @@ public class CartController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> AddItem(int productId, int quantity)
     {
-        await _cartService.AddItemAsync(GetUserId(), productId, quantity);
-        return Ok("Sepete Ekleme Başarılı!");
+        var cart = await _cartService.AddItemAsync(GetUserId(), productId, quantity);
+
+        var result = new
+        {
+            cartItems = cart.CartItems.Select(ci => new
+            {
+                id = ci.Id,
+                productId = ci.ProductId,
+                quantity = ci.Quantity,
+                product = new
+                {
+                    id = ci.Product.Id,
+                    name = ci.Product.Name,
+                    price = ci.Product.Price,
+                    picture = ci.Product.Picture
+                }
+            }).ToList()
+        };
+
+        return Ok(result);
     }
+
 
     [HttpDelete("remove/{cartItemId}")]
     public async Task<IActionResult> RemoveItem(int cartItemId)
