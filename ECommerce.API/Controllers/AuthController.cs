@@ -19,16 +19,49 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+    // Kullanıcı için token oluşturma yardımcı metodu
+    private string GenerateJwtToken(User user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username)
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),
+            Issuer = _config["Jwt:Issuer"],
+            Audience = _config["Jwt:Audience"],
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+
+
+
+
     [HttpPost("register")]
     public async Task<IActionResult> Register(User user)
     {
         var existingUser = await _userService.GetByUsernameAsync(user.Username);
         if (existingUser != null) return BadRequest("Username already exists.");
 
-        // Basit hash örneği (gerçek projede BCrypt veya Argon2 kullan)
         user.PasswordHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(user.PasswordHash));
         await _userService.AddAsync(user);
-        return Ok();
+
+        var token = GenerateJwtToken(user);
+        return Ok(new
+        {
+            Token = token,
+            Username = user.Username,
+            Email = user.Email
+        });
     }
 
     [HttpPost("login")]
@@ -40,27 +73,11 @@ public class AuthController : ControllerBase
         var passwordHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(login.PasswordHash));
         if (user.PasswordHash != passwordHash) return Unauthorized();
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
-
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
-            }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            Issuer = _config["Jwt:Issuer"],
-            Audience = _config["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var token = GenerateJwtToken(user);
         return Ok(new
         {
-            Token = tokenHandler.WriteToken(token),
-            Username = user.Username 
+            Token = token,
+            Username = user.Username
         });
     }
 }
