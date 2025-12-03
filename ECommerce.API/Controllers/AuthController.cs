@@ -57,6 +57,10 @@ public class AuthController : ControllerBase
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return Ok(new { Token = tokenHandler.WriteToken(token) });
+        return Ok(new
+        {
+            Token = tokenHandler.WriteToken(token),
+            Username = user.Username 
+        });
     }
 }

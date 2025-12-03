@@ -3,6 +3,7 @@ using ECommerce.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ECommerce.Infrastructure.Repositories;
@@ -32,5 +33,9 @@ public class GenericRepository<T> : IRepository<T> where T : class
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
+    }
+    public async Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.Where(predicate).ToListAsync();
     }
 }

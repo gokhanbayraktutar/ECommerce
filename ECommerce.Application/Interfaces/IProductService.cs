@@ -12,4 +12,6 @@ public interface IProductService
     Task DeleteAsync(int id);
 
     Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId);
+
+    Task<IEnumerable<Product>> SearchAsync(string query);
 }

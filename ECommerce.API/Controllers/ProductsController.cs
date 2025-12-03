@@ -52,5 +52,14 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("Arama terimi boş olamaz.");
+
+        var products = await _productService.SearchAsync(query);
+        return Ok(products);
+    }
 
 }

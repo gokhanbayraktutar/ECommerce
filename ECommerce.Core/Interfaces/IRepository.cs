@@ -10,4 +10,7 @@ public interface IRepository<T> where T : class
     void Update(T entity);
     void Delete(T entity); 
     Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+    Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate);
+
+
 }

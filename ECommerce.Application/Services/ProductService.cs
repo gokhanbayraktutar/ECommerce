@@ -29,4 +29,8 @@ public class ProductService : IProductService
         var products = await _unitOfWork.Products.FindAsync(p => p.CategoryId == categoryId);
         return products;
     }
+    public async Task<IEnumerable<Product>> SearchAsync(string query)
+    {
+        return await _unitOfWork.Products.WhereAsync(p => p.Name.Contains(query));
+    }
 }
