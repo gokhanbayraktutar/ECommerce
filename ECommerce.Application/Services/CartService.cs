@@ -34,9 +34,8 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
 }
 
 
-    public async Task<Cart> AddItemAsync(int userId, int productId, int quantity)
+    public async Task<Cart> AddItemAsync(int userId, int productId, int quantity, decimal price)
     {
-        // Mevcut sepeti getir (cartItems ve ürünleri dahil)
         var cart = await GetCartByUserIdAsync(userId);
 
         if (cart == null)
@@ -49,16 +48,15 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
             };
 
             await _unitOfWork.Carts.AddAsync(cart);
-            await _unitOfWork.CommitAsync(); // CartId oluşsun
+            await _unitOfWork.CommitAsync();
         }
 
-        // Sepette aynı üründen varsa miktarı artır
         var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
 
         if (existingItem != null)
         {
             existingItem.Quantity += quantity;
-            // EF tracking var, Update gerek yok
+            existingItem.TotalPrice = existingItem.Price * existingItem.Quantity;  // 🔥 eklendi
         }
         else
         {
@@ -66,7 +64,9 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
             {
                 CartId = cart.Id,
                 ProductId = productId,
-                Quantity = quantity
+                Quantity = quantity,
+                Price = price,
+                TotalPrice = price * quantity
             };
 
             await _unitOfWork.CartItems.AddAsync(newItem);
@@ -74,7 +74,6 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
 
         await _unitOfWork.CommitAsync();
 
-        // Güncel sepeti tekrar yükle, ürünleri dahil et
         cart.CartItems = (await _unitOfWork.CartItems.FindAsync(ci => ci.CartId == cart.Id)).ToList();
 
         foreach (var item in cart.CartItems)
@@ -82,8 +81,14 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
             item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
         }
 
+        cart.TotalPaymentPrice = cart.CartItems.Sum(ci => ci.TotalPrice);
+
+        _unitOfWork.Carts.Update(cart);
+        await _unitOfWork.CommitAsync();
+
         return cart;
     }
+
 
 
 

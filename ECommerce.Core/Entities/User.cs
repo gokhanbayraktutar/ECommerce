@@ -13,6 +13,12 @@ namespace ECommerce.Core.Entities
         public string PasswordHash { get; set; }
 
         public string? Email { get; set; }
+        public string?Name { get; set; }
+
+        public string? Lastname { get; set; }
+
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
 
         // Bir kullanıcının tek sepeti olur
         public Cart? Cart { get; set; } 

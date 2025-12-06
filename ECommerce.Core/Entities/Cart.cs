@@ -10,12 +10,24 @@ namespace ECommerce.Core.Entities
     {
         public int Id { get; set; }
 
-        // User ilişkisi (1-1)
         public int UserId { get; set; }
         public string OrderStatus { get; set; }
+
+        public string? PaymentType { get; set; }
+
+        public string? OrderNote { get; set; }
+        public string? Address { get; set; }
+        public string? UserEmail { get; set; }
+        public string? FullName { get; set; }
+        public string? Phone { get; set; }
+
+        public decimal? TotalPaymentPrice { get; set; }
+
+        public string? OrderNo { get; set; }
+        public DateTime? OrderDate { get; set; }
+
         public User User { get; set; }
 
-        // Sepet içeriği
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
     }
 }
