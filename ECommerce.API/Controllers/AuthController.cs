@@ -77,7 +77,12 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             Token = token,
-            Username = user.Username
+            Username = user.Username,
+            Email = user.Email,
+            Name = user.Name,
+            LastName = user.Lastname,
+            Phone = user.Phone
+
         });
     }
 }
