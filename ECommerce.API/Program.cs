@@ -76,6 +76,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.MaxDepth = 64; // Gerekirse artýrabilirsiniz
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
     });
 builder.Services.AddCors(options =>
 {
