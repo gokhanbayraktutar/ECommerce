@@ -20,7 +20,6 @@ namespace ECommerce.Core.Entities
         public string? Phone { get; set; }
         public string? Address { get; set; }
 
-        // Bir kullanıcının tek sepeti olur
-        public Cart? Cart { get; set; } 
+        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }

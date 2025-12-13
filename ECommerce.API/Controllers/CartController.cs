@@ -21,8 +21,29 @@ public class CartController : ControllerBase
     public async Task<IActionResult> GetCart()
     {
         var cart = await _cartService.GetCartByUserIdAsync(GetUserId());
-        return Ok(cart);
+
+        return Ok(new
+        {
+            cartItems = cart?.CartItems?.Select(ci => new
+            {
+                id = ci.Id,
+                productId = ci.ProductId,
+                quantity = ci.Quantity,
+                price = ci.Price,
+                totalPrice = ci.TotalPrice,
+                product = new
+                {
+                    id = ci.Product.Id,
+                    name = ci.Product.Name,
+                    price = ci.Product.Price,
+                    picture = ci.Product.Picture
+                }
+            }) ?? Enumerable.Empty<object>(),
+
+            totalPaymentPrice = cart?.TotalPaymentPrice ?? 0
+        });
     }
+
 
     [HttpPost("add")]
     public async Task<IActionResult> AddItem(int productId, int quantity, decimal price)

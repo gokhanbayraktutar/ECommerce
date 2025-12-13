@@ -1,6 +1,5 @@
 ﻿using ECommerce.Application.DTO;
 using ECommerce.Application.Interfaces;
-using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using Iyzipay;
 using Iyzipay.Model;
@@ -19,18 +18,25 @@ public class PaymentController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _config;
 
-    public PaymentController(ICartService cartService, IUnitOfWork unitOfWork, IConfiguration config)
+    public PaymentController(
+        ICartService cartService,
+        IUnitOfWork unitOfWork,
+        IConfiguration config)
     {
         _cartService = cartService;
         _unitOfWork = unitOfWork;
         _config = config;
     }
 
-    private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    private int GetUserId()
+        => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout([FromBody] PaymentRequestDto paymentDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var cart = await _cartService.GetCartByUserIdAsync(GetUserId());
         if (cart == null || !cart.CartItems.Any())
             return BadRequest("Cart is empty");
@@ -42,14 +48,17 @@ public class PaymentController : ControllerBase
             BaseUrl = _config["Iyzipay:BaseUrl"]
         };
 
-        var totalPrice = cart.TotalPaymentPrice ?? 0;
+        var totalPrice = cart.TotalPaymentPrice ?? 0m;
 
         var request = new CreatePaymentRequest
         {
             Locale = Locale.TR.ToString(),
             ConversationId = Guid.NewGuid().ToString(),
-            Price = totalPrice.ToString("0.##"),
-            PaidPrice = totalPrice.ToString("0.##"),
+
+            // 🔴 KRİTİK DÜZELTME
+            Price = totalPrice.ToString("0.##", CultureInfo.InvariantCulture),
+            PaidPrice = totalPrice.ToString("0.##", CultureInfo.InvariantCulture),
+
             Currency = Currency.TRY.ToString(),
             Installment = 1,
             BasketId = cart.Id.ToString(),
@@ -102,11 +111,14 @@ public class PaymentController : ControllerBase
                 Name = ci.Product.Name,
                 Category1 = ci.Product.CategoryId.ToString(),
                 ItemType = BasketItemType.PHYSICAL.ToString(),
-                Price = ci.TotalPrice?.ToString("0.##") ?? "0"
+
+                // 🔴 KRİTİK DÜZELTME
+                Price = (ci.TotalPrice ?? 0m)
+                    .ToString("0.##", CultureInfo.InvariantCulture)
             }).ToList()
         };
 
-        var payment = await Task.Run(() => Payment.Create(request, options));
+        Payment payment = await Payment.Create(request, options);
 
         if (payment != null &&
             payment.Status != null &&
@@ -114,12 +126,13 @@ public class PaymentController : ControllerBase
         {
             cart.OrderStatus = "Sipariş Alındı";
             cart.OrderDate = DateTime.Now;
+
             _unitOfWork.Carts.Update(cart);
             await _unitOfWork.CommitAsync();
+
             return Ok(payment);
         }
 
         return BadRequest(payment?.ErrorMessage ?? "Payment failed");
     }
-
 }

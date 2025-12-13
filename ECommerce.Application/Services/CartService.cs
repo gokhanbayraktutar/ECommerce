@@ -16,8 +16,8 @@ public class CartService : ICartService
 
 public async Task<Cart> GetCartByUserIdAsync(int userId)
 {
-    var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId && c.OrderStatus == "Sepette");
-    var cart = carts.FirstOrDefault();
+        var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId && c.OrderStatus == "Sepette");
+        var cart = carts.FirstOrDefault();
 
     if (cart != null)
     {
