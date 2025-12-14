@@ -10,7 +10,7 @@ namespace ECommerce.Application.Interfaces
     public interface IFavourite_ProductService
     {
         Task<IEnumerable<Favourite_Product>> GetAllAsync();
-        Task<Favourite_Product> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Favourite_Product>> GetByUserIdAsync(int userId);
         Task AddAsync(Favourite_Product category);
         Task DeleteAsync(int id);
     }

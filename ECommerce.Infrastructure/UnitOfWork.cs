@@ -13,6 +13,7 @@ namespace ECommerce.Infrastructure
         private IRepository<User> _users;
         private IRepository<Cart> _carts;
         private IRepository<CartItem> _cartItems;
+        private IRepository<Favourite_Product> _favouriteProducts;
 
         public UnitOfWork(AppDbContext context)
         {
@@ -24,6 +25,7 @@ namespace ECommerce.Infrastructure
         public IRepository<User> Users => _users ??= new GenericRepository<User>(_context);
         public IRepository<Cart> Carts => _carts ??= new GenericRepository<Cart>(_context);
         public IRepository<CartItem> CartItems => _cartItems ??= new GenericRepository<CartItem>(_context);
+        public IRepository<Favourite_Product> favouriteProducts => _favouriteProducts ??= new GenericRepository<Favourite_Product>(_context);
 
         public async Task<int> CommitAsync() => await _context.SaveChangesAsync();
         public void Dispose() => _context.Dispose();
