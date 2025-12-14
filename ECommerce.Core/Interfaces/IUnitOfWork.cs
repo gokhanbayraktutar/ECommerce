@@ -9,6 +9,7 @@ namespace ECommerce.Core.Interfaces
         IRepository<User> Users { get; }
         IRepository<Cart> Carts { get; }
         IRepository<CartItem> CartItems { get; }
+        IRepository<Favourite_Product> Favourite_Products { get; }
         Task<int> CommitAsync();
     }
 }
