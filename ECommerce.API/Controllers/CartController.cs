@@ -96,5 +96,12 @@ public class CartController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("myorders")]
+    public async Task<IActionResult> GetMyOrders()
+    {
+        var userId = GetUserId();
+        var orders = await _cartService.GetOrdersByUserIdAsync(userId);
 
+        return Ok(orders);
+    }
 }

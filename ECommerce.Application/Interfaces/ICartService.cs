@@ -11,4 +11,6 @@ public interface ICartService
     Task UpdateItemQuantityAsync(int userId, int cartItemId, int quantity);
 
     Task<OrderDetailDto> GetOrderDetailAsync(int userId, int cartId);
+
+    Task<List<OrderSummaryDto>> GetOrdersByUserIdAsync(int userId);
 }

@@ -157,5 +157,22 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
         };
     }
 
+    public async Task<List<OrderSummaryDto>> GetOrdersByUserIdAsync(int userId)
+    {
+        var carts = await _unitOfWork.Carts.FindAsync(c =>
+            c.UserId == userId &&
+            c.OrderStatus == "Sipariş Alındı"
+        );
+
+        return carts.Select(cart => new OrderSummaryDto
+        {
+            CartId = cart.Id,
+            OrderNo = cart.OrderNo,
+            OrderDate = cart.OrderDate,
+            TotalPrice = cart.TotalPaymentPrice ?? 0,
+            OrderStatus = cart.OrderStatus,
+            PaymentType = cart.PaymentType
+        }).ToList();
+    }
 
 }
