@@ -84,4 +84,17 @@ public class CartController : ControllerBase
         await _cartService.UpdateItemQuantityAsync(GetUserId(), cartItemId, quantity);
         return Ok();
     }
+
+    [HttpGet("order/{cartId}")]
+    public async Task<IActionResult> GetOrderDetail(int cartId)
+    {
+        var result = await _cartService.GetOrderDetailAsync(GetUserId(), cartId);
+
+        if (result == null)
+            return NotFound("Sipariş bulunamadı");
+
+        return Ok(result);
+    }
+
+
 }

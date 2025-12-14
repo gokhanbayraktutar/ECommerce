@@ -54,11 +54,8 @@ public class PaymentController : ControllerBase
         {
             Locale = Locale.TR.ToString(),
             ConversationId = Guid.NewGuid().ToString(),
-
-            // 🔴 KRİTİK DÜZELTME
             Price = totalPrice.ToString("0.##", CultureInfo.InvariantCulture),
             PaidPrice = totalPrice.ToString("0.##", CultureInfo.InvariantCulture),
-
             Currency = Currency.TRY.ToString(),
             Installment = 1,
             BasketId = cart.Id.ToString(),
@@ -111,8 +108,6 @@ public class PaymentController : ControllerBase
                 Name = ci.Product.Name,
                 Category1 = ci.Product.CategoryId.ToString(),
                 ItemType = BasketItemType.PHYSICAL.ToString(),
-
-                // 🔴 KRİTİK DÜZELTME
                 Price = (ci.TotalPrice ?? 0m)
                     .ToString("0.##", CultureInfo.InvariantCulture)
             }).ToList()
@@ -121,18 +116,25 @@ public class PaymentController : ControllerBase
         Payment payment = await Payment.Create(request, options);
 
         if (payment != null &&
-            payment.Status != null &&
-            payment.Status.Equals("success", StringComparison.OrdinalIgnoreCase))
+            payment.Status?.Equals("success", StringComparison.OrdinalIgnoreCase) == true)
         {
             cart.OrderStatus = "Sipariş Alındı";
             cart.OrderDate = DateTime.Now;
-
+            cart.OrderNo = $"ORD-{Guid.NewGuid().ToString("N")[..10].ToUpper()}";
+            cart.PaymentType = "Kredi Kartı";
             _unitOfWork.Carts.Update(cart);
             await _unitOfWork.CommitAsync();
 
-            return Ok(payment);
+            return Ok(new
+            {
+                cartId = cart.Id,
+                orderNo = cart.OrderNo,
+                totalPrice = cart.TotalPaymentPrice,
+                paymentStatus = payment.Status
+            });
         }
 
         return BadRequest(payment?.ErrorMessage ?? "Payment failed");
     }
+
 }

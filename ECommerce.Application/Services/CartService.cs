@@ -1,4 +1,5 @@
-﻿using ECommerce.Application.Interfaces;
+﻿using ECommerce.Application.DTO;
+using ECommerce.Application.Interfaces;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 
@@ -90,9 +91,6 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
     }
 
 
-
-
-
     public async Task RemoveItemAsync(int userId, int cartItemId)
     {
         var cart = await GetCartByUserIdAsync(userId);
@@ -117,4 +115,47 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
             await _unitOfWork.CommitAsync();
         }
     }
+
+    public async Task<OrderDetailDto> GetOrderDetailAsync(int userId, int cartId)
+    {
+        var carts = await _unitOfWork.Carts.FindAsync(c =>
+            c.Id == cartId &&
+            c.UserId == userId &&
+            c.OrderStatus == "Sipariş Alındı"
+        );
+
+        var cart = carts.FirstOrDefault();
+        if (cart == null)
+            return null;
+
+        cart.CartItems = (await _unitOfWork.CartItems.FindAsync(ci =>
+            ci.CartId == cart.Id
+        )).ToList();
+
+        foreach (var item in cart.CartItems)
+        {
+            item.Product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+        }
+
+        return new OrderDetailDto
+        {
+            CartId = cart.Id,
+            OrderNo = cart.OrderNo,
+            OrderDate = cart.OrderDate,
+            TotalPrice = cart.TotalPaymentPrice ?? 0,
+            PaymentType = cart.PaymentType,
+
+            Items = cart.CartItems.Select(ci => new OrderItemDto
+            {
+                Id = ci.Id,
+                ProductName = ci.Product?.Name,
+                Picture = ci.Product?.Picture,
+                Price = ci.Price ?? 0,
+                Quantity = ci.Quantity,
+                TotalPrice = ci.TotalPrice ?? 0
+            }).ToList()
+        };
+    }
+
+
 }
