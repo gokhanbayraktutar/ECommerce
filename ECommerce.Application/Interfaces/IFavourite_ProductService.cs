@@ -13,5 +13,6 @@ namespace ECommerce.Application.Interfaces
         Task<IEnumerable<Favourite_Product>> GetByUserIdAsync(int userId);
         Task AddAsync(Favourite_Product category);
         Task DeleteAsync(int id);
+
     }
 }

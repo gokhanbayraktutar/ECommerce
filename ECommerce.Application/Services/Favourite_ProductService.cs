@@ -15,6 +15,13 @@ public class Favourite_ProductService : IFavourite_ProductService
 
     public async Task AddAsync(Favourite_Product favourite_Product)
     {
+        var products = await _unitOfWork.Products.FindAsync(x => x.Id == favourite_Product.ProductId);
+        var product = products?.FirstOrDefault();
+        if (product != null)
+        {
+            favourite_Product.Product = product;
+        }
+      
         await _unitOfWork.Favourite_Products.AddAsync(favourite_Product);
         await _unitOfWork.CommitAsync();
     }
@@ -31,8 +38,10 @@ public class Favourite_ProductService : IFavourite_ProductService
 
     public async Task<IEnumerable<Favourite_Product>> GetAllAsync() => await _unitOfWork.Favourite_Products.GetAllAsync();
 
-    public async Task<IEnumerable<Favourite_Product>> GetByUserIdAsync(int userId) =>
-    await _unitOfWork.Favourite_Products.FindAsync(fp => fp.UserId == userId);
-
-
+    public async Task<IEnumerable<Favourite_Product>> GetByUserIdAsync(int userId)
+    {
+        return await _unitOfWork.Favourite_Products.FindAsync(
+        fp => fp.UserId == userId,
+        fp => fp.Product);    
+    }
 }
