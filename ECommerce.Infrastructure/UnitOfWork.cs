@@ -11,6 +11,7 @@ namespace ECommerce.Infrastructure
         private IRepository<Product> _products;
         private IRepository<Category> _categories;
         private IRepository<User> _users;
+        private IRepository<Admin> _admins;
         private IRepository<Cart> _carts;
         private IRepository<CartItem> _cartItems;
         private IRepository<Favourite_Product> _favouriteProducts;
@@ -23,6 +24,7 @@ namespace ECommerce.Infrastructure
         public IRepository<Product> Products => _products ??= new GenericRepository<Product>(_context);
         public IRepository<Category> Categories => _categories ??= new GenericRepository<Category>(_context);
         public IRepository<User> Users => _users ??= new GenericRepository<User>(_context);
+        public IRepository<Admin> Admins => _admins ??= new GenericRepository<Admin>(_context);
         public IRepository<Cart> Carts => _carts ??= new GenericRepository<Cart>(_context);
         public IRepository<CartItem> CartItems => _cartItems ??= new GenericRepository<CartItem>(_context);
 

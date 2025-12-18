@@ -7,6 +7,7 @@ namespace ECommerce.Core.Interfaces
         IRepository<Product> Products { get; }
         IRepository<Category> Categories { get; }
         IRepository<User> Users { get; }
+        IRepository<Admin> Admins { get; }
         IRepository<Cart> Carts { get; }
         IRepository<CartItem> CartItems { get; }
         IRepository<Favourite_Product> Favourite_Products { get; }
