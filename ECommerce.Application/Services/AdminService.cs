@@ -14,7 +14,7 @@ public class AdminService : IAdminService
     public async Task AddAsync(Admin Admin)
     {
         await _unitOfWork.Admins.AddAsync(Admin);
-        await _unitOfWork.CommitAsync();  // ✔ kayıt burada yapılır
+        await _unitOfWork.CommitAsync();  
     }
 
     public async Task DeleteAsync(int id)
