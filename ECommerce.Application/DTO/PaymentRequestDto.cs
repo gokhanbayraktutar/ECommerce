@@ -15,6 +15,9 @@ namespace ECommerce.Application.DTO
         public string ExpireYear { get; set; }
         public string Cvc { get; set; }
         public string BuyerEmail { get; set; }
+
+        public string Address { get; set; }
+        
     }
 
 }

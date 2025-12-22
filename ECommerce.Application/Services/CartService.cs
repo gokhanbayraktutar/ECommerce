@@ -166,6 +166,9 @@ public class CartService : ICartService
             OrderDate = cart.OrderDate,
             TotalPrice = cart.TotalPaymentPrice ?? 0,
             PaymentType = cart.PaymentType,
+            FullName = cart.FullName,
+            Phone = cart.Phone,
+            Address = cart.Address,
 
             Items = cart.CartItems.Select(ci => new OrderItemDto
             {
@@ -183,7 +186,7 @@ public class CartService : ICartService
     {
         var carts = await _unitOfWork.Carts.FindAsync(c =>
             c.UserId == userId &&
-            c.OrderStatus == "Sipariş Alındı"
+            c.OrderStatus != "Sepette"
         );
 
         return carts.Select(cart => new OrderSummaryDto

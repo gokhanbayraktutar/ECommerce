@@ -31,6 +31,17 @@ public class PaymentController : ControllerBase
     private int GetUserId()
         => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
+    private async Task<(string Email, string Phone, string FullName)> GetUserInfoFromDbAsync()
+    {
+        var userId = GetUserId();
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        var fullName = $"{user.Name} {user.Lastname}";
+
+        return (user.Email, user.Phone, fullName);
+    }
+
+
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout([FromBody] PaymentRequestDto paymentDto)
     {
@@ -122,6 +133,11 @@ public class PaymentController : ControllerBase
             cart.OrderDate = DateTime.Now;
             cart.OrderNo = $"ORD-{Guid.NewGuid().ToString("N")[..10].ToUpper()}";
             cart.PaymentType = "Kredi Kartı";
+            var userInfo = await GetUserInfoFromDbAsync();
+            cart.UserEmail = userInfo.Email;
+            cart.Phone = userInfo.Phone;
+            cart.FullName = userInfo.FullName;
+            cart.Address = paymentDto.Address;
             _unitOfWork.Carts.Update(cart);
             await _unitOfWork.CommitAsync();
 
