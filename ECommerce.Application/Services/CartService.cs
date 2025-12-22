@@ -33,7 +33,10 @@ public class CartService : ICartService
             }
         }
 
-        return carts;
+        return carts
+             .OrderBy(x => x.OrderStatus == "Sipariş Alındı" ? 0 : 1)
+             .ThenByDescending(x => x.OrderStatus == "Sipariş Alındı" ? x.OrderDate : DateTime.MinValue);
+
     }
 
 
