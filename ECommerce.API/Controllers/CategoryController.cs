@@ -46,7 +46,7 @@ public class CategoriesController : ControllerBase
     {
         if (id != category.Id) return BadRequest();
         await _categoryService.UpdateAsync(category);
-        return NoContent();
+        return CreatedAtAction(nameof(Get), new { id = category.Id }, category);
     }
 
     // DELETE: api/categories/5

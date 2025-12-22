@@ -13,7 +13,11 @@ public class CategoryService : ICategoryService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AddAsync(Category category) => await _unitOfWork.Categories.AddAsync(category);
+    public async Task AddAsync(Category category)
+    {
+        await _unitOfWork.Categories.AddAsync(category);
+        await _unitOfWork.CommitAsync(); 
+    }
 
     public async Task DeleteAsync(int id)
     {
@@ -27,7 +31,11 @@ public class CategoryService : ICategoryService
 
     public async Task<Category> GetByIdAsync(int id) => await _unitOfWork.Categories.GetByIdAsync(id);
 
-    public async Task UpdateAsync(Category category) => _unitOfWork.Categories.Update(category);
+    public async Task UpdateAsync(Category category)
+    {
+        _unitOfWork.Categories.Update(category);
+        await _unitOfWork.CommitAsync();
+    }
 
    
 }
