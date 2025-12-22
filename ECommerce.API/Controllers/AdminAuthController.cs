@@ -53,11 +53,11 @@ public class AdminAuthController : ControllerBase
         if (admin == null)
             return Unauthorized("Admin not found");
 
-        var passwordHash = Convert.ToBase64String(
-            Encoding.UTF8.GetBytes(request.Password)
-        );
+        //var passwordHash = Convert.ToBase64String(
+        //    Encoding.UTF8.GetBytes(request.Password)
+        //);
 
-        if (admin.PasswordHash != passwordHash)
+        if (admin.PasswordHash != request.Password)
             return Unauthorized("Invalid password");
 
         var token = GenerateAdminJwt(admin);
