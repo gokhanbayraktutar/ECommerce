@@ -14,8 +14,30 @@ public class CartService : ICartService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<IEnumerable<Cart>> GetAllAsync()
+    {
+        var carts = (await _unitOfWork.Carts
+            .FindAsync(c => c.OrderStatus != "Sepette"))
+            .ToList();
 
-public async Task<Cart> GetCartByUserIdAsync(int userId)
+        foreach (var cart in carts)
+        {
+            cart.CartItems = (await _unitOfWork.CartItems
+                .FindAsync(ci => ci.CartId == cart.Id))
+                .ToList();
+
+            foreach (var item in cart.CartItems)
+            {
+                item.Product = await _unitOfWork.Products
+                    .GetByIdAsync(item.ProductId);
+            }
+        }
+
+        return carts;
+    }
+
+
+    public async Task<Cart> GetCartByUserIdAsync(int userId)
 {
         var carts = await _unitOfWork.Carts.FindAsync(c => c.UserId == userId && c.OrderStatus == "Sepette");
         var cart = carts.FirstOrDefault();
@@ -174,5 +196,20 @@ public async Task<Cart> GetCartByUserIdAsync(int userId)
             PaymentType = cart.PaymentType
         }).ToList();
     }
+
+    public async Task UpdateOrderStatusAsync(int cartId, string status)
+    {
+        var carts = await _unitOfWork.Carts.FindAsync(c => c.Id == cartId);
+        var cart = carts.FirstOrDefault();
+
+        if (cart == null)
+            throw new Exception("Sipariş bulunamadı");
+
+        cart.OrderStatus = status;
+
+        _unitOfWork.Carts.Update(cart);
+        await _unitOfWork.CommitAsync();
+    }
+
 
 }

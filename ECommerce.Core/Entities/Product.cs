@@ -18,9 +18,9 @@ namespace ECommerce.Core.Entities
 
         // Category
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category ?Category { get; set; }
 
         // CartItem ilişkisi
-        public ICollection<CartItem> CartItems { get; set; }
+        public ICollection<CartItem> ?CartItems { get; set; }
     }
 }

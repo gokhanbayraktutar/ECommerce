@@ -35,7 +35,7 @@ public class ProductsController : ControllerBase
     {
         if (id != product.Id) return BadRequest();
         await _productService.UpdateAsync(product);
-        return NoContent();
+        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
     }
 
     [HttpDelete("{id}")]

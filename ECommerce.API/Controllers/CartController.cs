@@ -104,4 +104,18 @@ public class CartController : ControllerBase
 
         return Ok(orders);
     }
+
+    [HttpGet("orders")]
+    public async Task<IActionResult> GetOrders()
+    {
+        var orders = await _cartService.GetAllAsync();
+
+        return Ok(orders);
+    }
+    [HttpPut("order/status/{cartId}")]
+    public async Task<IActionResult> UpdateOrderStatus(int cartId, [FromBody] string status)
+    {
+        await _cartService.UpdateOrderStatusAsync(cartId, status);
+        return Ok();
+    }
 }
