@@ -14,4 +14,5 @@ public interface IProductService
     Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId);
 
     Task<IEnumerable<Product>> SearchAsync(string query);
+
 }

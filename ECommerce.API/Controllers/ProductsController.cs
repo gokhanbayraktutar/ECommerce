@@ -7,9 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
-    public ProductsController(IProductService productService)
+
+    private readonly IProductSearchService _searchService;
+    public ProductsController(IProductService productService, IProductSearchService searchService)
     {
         _productService = productService;
+
+        _searchService = searchService;
     }
 
     [HttpGet]
@@ -52,14 +56,14 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
             return BadRequest("Arama terimi boş olamaz.");
 
-        var products = await _productService.SearchAsync(query);
+        var products = await _searchService.SearchAsync(query);
         return Ok(products);
     }
-
 }

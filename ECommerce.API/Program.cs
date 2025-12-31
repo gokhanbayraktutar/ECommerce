@@ -3,6 +3,8 @@ using ECommerce.Application.Services;
 using ECommerce.Core.Interfaces;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Contexts;
+using ECommerce.Infrastructure.Search;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +30,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IFavourite_ProductService, Favourite_ProductService>();
+builder.Services.AddScoped<ElasticProductIndexer>();
+builder.Services.AddScoped<IProductSearchService, ElasticProductSearchService>();
 
 // =======================
 // JWT AUTH
@@ -108,6 +112,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddSingleton(sp =>
+{
+    var settings = new ElasticsearchClientSettings(
+        new Uri("http://localhost:9200")
+    )
+    .DefaultIndex("products");
+
+    return new ElasticsearchClient(settings);
+});
 var app = builder.Build();
 
 app.UseSwagger();
