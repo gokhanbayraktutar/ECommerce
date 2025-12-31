@@ -16,29 +16,31 @@ public class ElasticProductSearchService : IProductSearchService
 
     public async Task<IEnumerable<ProductSearchDto>> SearchAsync(string query)
     {
-        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 1) 
             return Enumerable.Empty<ProductSearchDto>();
 
         var response = await _elasticClient.SearchAsync<ProductSearchDto>(s => s
             .Index("products")
             .Size(20)
             .Query(q => q
-                .MultiMatch(m => m
-                    .Query(query)
-                    .Fields(new[] { "name", "categoryName" })
-                    .Fuzziness(new Fuzziness("AUTO"))
-                    .Operator(Operator.And)
+                .Bool(b => b
+                    .Should(
+                        sh => sh.Prefix(p => p
+                            .Field(f => f.Name)
+                            .Value(query.ToLower())
+                        ),
+                        sh => sh.Prefix(p => p
+                            .Field(f => f.CategoryName)
+                            .Value(query.ToLower())
+                        )
+                    )
                 )
             )
         );
 
-        if (!response.IsValidResponse)
-        {
-            throw new Exception($"Elastic search hatası: {response.ElasticsearchServerError?.Error.Reason}");
-        }
-
         return response.Documents;
     }
+
 
 
 

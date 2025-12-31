@@ -1,5 +1,6 @@
 ﻿using ECommerce.Infrastructure.Search;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Analysis;
 using Elastic.Clients.Elasticsearch.Mapping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,24 +26,61 @@ public class ElasticController : ControllerBase
         if (exists.Exists)
             return Ok("Index zaten var");
 
-        var response = await _elasticClient.Indices.CreateAsync("products", c => c
-            .Mappings(m => m
-                .Properties(new Properties
-                {
-                {
-                    "name",
-                    new TextProperty()
-                },
-                {
-                    "categoryName",
-                    new KeywordProperty()
-                }
-                })
-            )
-        );
+        try
+        {
+            var response = await _elasticClient.Indices.CreateAsync("products", c => c
+                .Settings(s => s
+                    .Analysis(a => a
+                        .Tokenizers(t => t
+                            .EdgeNGram("autocomplete_tokenizer", e => e
+                                .MinGram(2)
+                                .MaxGram(20)
+                                .TokenChars(new[] { TokenChar.Letter, TokenChar.Digit })
+                            )
+                        )
+                        .Analyzers(an => an
+                            .Custom("autocomplete", ca => ca
+                                .Tokenizer("autocomplete_tokenizer")
+                                .Filter(new[] { "lowercase" })
+                            )
+                        )
+                    )
+                )
+                .Mappings(m => m
+                    .Properties(new Properties
+                    {
+                    {
+                        "name",
+                        new TextProperty
+                        {
+                            Analyzer = "autocomplete",
+                            SearchAnalyzer = "standard"
+                        }
+                    },
+                    {
+                        "categoryName",
+                        new TextProperty
+                        {
+                            Analyzer = "autocomplete",
+                            SearchAnalyzer = "standard"
+                        }
+                    }
+                    })
+                )
+            );
 
-        return Ok("Index oluşturuldu");
+            return Ok("Index oluşturuldu (Edge N-gram hazır)");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Index oluşturulamadı: {ex.Message}");
+        }
     }
+
+
+
+
+
 
 
 
