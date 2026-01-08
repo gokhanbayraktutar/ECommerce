@@ -4,7 +4,7 @@
     {
         // IYZICO ÖDEME KART TEST BİLGİLERİ
 
-        // Kart Numarası: 5528790000000008
+        // Kart Numarası: 5528 7900 0000 0008
         // Son Kullanma Tarihi: 12/2030
         // CVV: 123
 

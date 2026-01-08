@@ -124,6 +124,12 @@ public class CartService : ICartService
         if (item != null)
         {
             _unitOfWork.CartItems.Delete(item);
+
+            cart.TotalPaymentPrice = cart.CartItems
+                .Where(ci => ci.Id != cartItemId)
+                .Sum(ci => ci.TotalPrice);
+            _unitOfWork.Carts.Update(cart);
+
             await _unitOfWork.CommitAsync();
         }
     }
