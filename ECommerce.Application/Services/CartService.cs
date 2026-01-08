@@ -145,8 +145,7 @@ public class CartService : ICartService
     {
         var carts = await _unitOfWork.Carts.FindAsync(c =>
             c.Id == cartId &&
-            c.UserId == userId &&
-            c.OrderStatus == "Sipariş Alındı"
+            c.UserId == userId 
         );
 
         var cart = carts.FirstOrDefault();

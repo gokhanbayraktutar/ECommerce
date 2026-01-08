@@ -112,15 +112,29 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton(sp =>
-{
-    var settings = new ElasticsearchClientSettings(
-        new Uri("http://localhost:9200")
-    )
-    .DefaultIndex("products");
 
-    return new ElasticsearchClient(settings);
-});
+
+var env = builder.Environment.EnvironmentName;
+
+if (env == "Development")
+{
+    builder.Services.AddSingleton(sp =>
+    {
+        var settings = new ElasticsearchClientSettings(new Uri("http://localhost:9200"))
+            .DefaultIndex("products");
+        return new ElasticsearchClient(settings);
+    });
+
+    builder.Services.AddScoped<IProductSearchService, ElasticProductSearchService>();
+}
+else
+{
+    builder.Services.AddScoped<IProductSearchService, SqlProductSearchService>();
+}
+
+
+
+
 var app = builder.Build();
 
 app.UseSwagger();
