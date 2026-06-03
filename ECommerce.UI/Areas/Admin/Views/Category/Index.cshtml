@@ -78,7 +78,7 @@
                                         }
                                     </td>
                                     <td>
-                                        @if (category.ActiveStatus)
+                                        @if (category.IsActive)
                                         {
                                             <span class="badge bg-success">Aktif</span>
                                         }
@@ -102,7 +102,7 @@
                                                     data-id="@category.Id"
                                                     data-name="@category.Name"
                                                     data-parent="@category.ParentCategoryId"
-                                                    data-status="@category.ActiveStatus.ToString().ToLower()">
+                                                    data-status="@category.IsActive.ToString().ToLower()">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </button>
                                             <form action="/Admin/Category/Delete/@category.Id" method="post" onsubmit="return confirm('@category.Name kategorisini silmek istediğinize emin misiniz?');">
