@@ -15,7 +15,6 @@ public class CategoriesController : ControllerBase
         _categoryService = categoryService;
     }
 
-    // GET: api/categories
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -23,7 +22,13 @@ public class CategoriesController : ControllerBase
         return Ok(categories);
     }
 
-    // GET: api/categories/5
+    [HttpGet("main")]
+    public async Task<IActionResult> GetMainCategories()
+    {
+        var mainCategories = await _categoryService.GetMainCategoriesAsync();
+        return Ok(mainCategories);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
@@ -32,24 +37,43 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    // POST: api/categories
+    [HttpGet("{parentId}/subcategories")]
+    public async Task<IActionResult> GetSubCategories(int parentId)
+    {
+        var subCategories = await _categoryService.GetSubCategoriesByParentIdAsync(parentId);
+        return Ok(subCategories);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(Category category)
     {
-        await _categoryService.AddAsync(category);
-        return CreatedAtAction(nameof(Get), new { id = category.Id }, category);
+        try
+        {
+            await _categoryService.AddAsync(category);
+            return CreatedAtAction(nameof(Get), new { id = category.Id }, category);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
-    // PUT: api/categories/5
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, Category category)
     {
         if (id != category.Id) return BadRequest();
-        await _categoryService.UpdateAsync(category);
-        return CreatedAtAction(nameof(Get), new { id = category.Id }, category);
+
+        try
+        {
+            await _categoryService.UpdateAsync(category);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
-    // DELETE: api/categories/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

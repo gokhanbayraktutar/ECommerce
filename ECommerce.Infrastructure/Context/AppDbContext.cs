@@ -22,5 +22,10 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.Entity<Category>()
+        .HasOne(c => c.ParentCategory)
+        .WithMany(c => c.ChildCategories)
+        .HasForeignKey(c => c.ParentCategoryId)
+        .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,0 +1,290 @@
+﻿@model List<ECommerce.Core.Entities.Category>
+
+@{
+    ViewData["Title"] = "Kategoriler";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int rowCount = 1;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Kategori Yönetimi</h4>
+
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">Kontrol Paneli</a></li>
+                    <li class="breadcrumb-item active">Kategoriler</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-block-helper me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="card-title">Kategori Listesi</h4>
+                        <p class="card-title-desc mb-0">
+                            Sistemde kayıtlı olan tüm ana ve alt kategorileri buradan yönetebilirsiniz.
+                        </p>
+                    </div>
+                    <div class="text-sm-end">
+                        <button type="button" id="btnMainCreateCategory" class="btn btn-success btn-rounded waves-effect waves-light mb-2 me-2">
+                            <i class="mdi mdi-plus me-1"></i> Yeni Kategori Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <table id="datatable-buttons" class="table table-bordered dt-responsive nowrap w-100 align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Sıra No</th>
+                            <th>Kategori Adı</th>
+                            <th>Durum</th>
+                            <th style="width: 180px; text-align: center;">İşlemler</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var category in Model)
+                            {
+                                <tr>
+                                    <td>@(rowCount++)</td>
+                                    <td>
+                                        @if (category.ParentCategoryId != null)
+                                        {
+                                            <span class="text-muted me-1" style="padding-left: 20px;">└─</span>
+                                            <span class="text-muted">@category.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <strong>@category.Name</strong>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (category.ActiveStatus)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Pasif</span>
+                                        }
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-outline-success btn-sm add-sub-category-btn"
+                                                    title="Alt Kategori Ekle"
+                                                    data-parentid="@category.Id"
+                                                    data-parentname="@category.Name">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm edit-category-btn"
+                                                    title="Düzenle"
+                                                    data-id="@category.Id"
+                                                    data-name="@category.Name"
+                                                    data-parent="@category.ParentCategoryId"
+                                                    data-status="@category.ActiveStatus.ToString().ToLower()">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </button>
+                                            <form action="/Admin/Category/Delete/@category.Id" method="post" onsubmit="return confirm('@category.Name kategorisini silmek istediğinize emin misiniz?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Henüz hiç kategori eklenmemiş.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newCategoryModal" tabindex="-1" role="dialog" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newCategoryModalLabel">Yeni Kategori Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/Admin/Category/Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="ParentCategoryId" id="hiddenParentCategoryId" value="" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kategori Adı</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Üst Kategori</label>
+                        <select id="newCategoryParentId" class="form-select" asp-items="ViewBag.MainCategories">
+                            <option value="">-- Üst Kategori Yok (Ana Kategori) --</option>
+                        </select>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="ActiveStatus" value="true" checked id="ActiveStatusSwitch">
+                        <label class="form-check-label" for="ActiveStatusSwitch">Aktif Durum</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryModalLabel">Kategori Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCategoryForm" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="ParentCategoryId" id="hiddenEditParentCategoryId" value="" />
+                <input type="hidden" name="Id" id="editCategoryId" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kategori Adı</label>
+                        <input type="text" name="Name" id="editCategoryName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Üst Kategori</label>
+                        <select id="editCategoryParentId" class="form-select" asp-items="ViewBag.MainCategories">
+                            <option value="">-- Üst Kategori Yok (Ana Kategori) --</option>
+                        </select>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="ActiveStatus" value="true" id="editCategoryActiveStatus">
+                        <label class="form-check-label" for="editCategoryActiveStatus">Aktif Durum</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/admin/assets/libs/jquery/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(document).on('click', '.edit-category-btn', function () {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var parentCategoryId = $(this).data('parent');
+            var status = $(this).data('status');
+
+            $('#editCategoryId').val(id);
+            $('#editCategoryName').val(name);
+
+            if (parentCategoryId !== undefined && parentCategoryId !== null && parentCategoryId !== "") {
+                $('#editCategoryParentId').val(parentCategoryId);
+                $('#hiddenEditParentCategoryId').val(parentCategoryId);
+            } else {
+                $('#editCategoryParentId').val("");
+                $('#hiddenEditParentCategoryId').val("");
+            }
+
+            $('#editCategoryParentId option').show();
+            $('#editCategoryParentId option[value="' + id + '"]').hide();
+
+            if (status === true || status === "true") {
+                $('#editCategoryActiveStatus').prop('checked', true);
+            } else {
+                $('#editCategoryActiveStatus').prop('checked', false);
+            }
+
+            $('#editCategoryForm').attr('action', '/Admin/Category/Edit/' + id);
+
+            var modalElement = document.getElementById('editCategoryModal');
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var bsModal = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+                bsModal.show();
+            } else if ($.fn.modal) {
+                $('#editCategoryModal').modal('show');
+            }
+        });
+
+        $(document).on('click', '.add-sub-category-btn', function () {
+            var parentCategoryId = $(this).data('parentid');
+            var parentName = $(this).data('parentname');
+
+            $('#newCategoryModalLabel').text(parentName + ' İçine Alt Kategori Ekle');
+            $('#newCategoryParentId').val(parentCategoryId);
+            $('#hiddenParentCategoryId').val(parentCategoryId);
+
+            var modalElement = document.getElementById('newCategoryModal');
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var bsModal = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+                bsModal.show();
+            } else if ($.fn.modal) {
+                $('#newCategoryModal').modal('show');
+            }
+        });
+
+        $(document).on('click', '#btnMainCreateCategory', function() {
+            $('#newCategoryModalLabel').text('Yeni Kategori Ekle');
+            $('#newCategoryParentId').val("");
+            $('#hiddenParentCategoryId').val("");
+            $('#newCategoryModal form')[0].reset();
+            $('#ActiveStatusSwitch').prop('checked', true);
+
+            var modalElement = document.getElementById('newCategoryModal');
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var bsModal = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+                bsModal.show();
+            } else if ($.fn.modal) {
+                $('#newCategoryModal').modal('show');
+            }
+        });
+
+        $(document).on('change', '#newCategoryParentId', function() {
+            var selectedValue = $(this).val();
+            $('#hiddenParentCategoryId').val(selectedValue);
+        });
+
+        $(document).on('change', '#editCategoryParentId', function() {
+            var selectedValue = $(this).val();
+            $('#hiddenEditParentCategoryId').val(selectedValue);
+        });
+    });
+</script>

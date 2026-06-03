@@ -14,15 +14,14 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =======================
-// DB CONTEXT
-// =======================
+if (builder.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == null)
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// =======================
-// SERVICES
-// =======================
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -31,12 +30,11 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IFavourite_ProductService, Favourite_ProductService>();
 builder.Services.AddScoped<ElasticProductIndexer>();
-builder.Services.AddScoped<IProductSearchService, ElasticProductSearchService>();
+
 
 // =======================
 // JWT AUTH
-// =======================
-var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "TemporaryFallbackKeyForMigrations123456!!!";
 var key = Encoding.ASCII.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -47,12 +45,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "MyApp",
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "MyAppUsers",
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
 
+// =======================
+// CORS
+// =======================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -70,21 +71,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-
-// =======================
-// CONTROLLERS + JSON
-// =======================
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.MaxDepth = 64; 
-     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.MaxDepth = 64;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 
-// =======================
-// SWAGGER
-// =======================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -112,11 +106,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
-
-var env = builder.Environment.EnvironmentName;
-
-if (env == "Development")
+if (builder.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == null)
 {
     builder.Services.AddSingleton(sp =>
     {
@@ -132,9 +122,6 @@ else
     builder.Services.AddScoped<IProductSearchService, SqlProductSearchService>();
 }
 
-
-
-
 var app = builder.Build();
 
 app.UseSwagger();
@@ -142,7 +129,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowReactApp");  
+app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

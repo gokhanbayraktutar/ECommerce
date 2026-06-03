@@ -5,24 +5,25 @@
 namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddOrderDateToCart : Migration
+    public partial class V2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
-            name: "OrderDate",
-            table: "Carts",
-            type: "datetime2",
-            nullable: true);
+            migrationBuilder.AddColumn<bool>(
+                name: "ActiveStatus",
+                table: "Categories",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-            name: "OrderDate",
-            table: "Carts");
+                name: "ActiveStatus",
+                table: "Categories");
         }
     }
 }

@@ -1,4 +1,6 @@
+using ECommerce.UI.ApiClients;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +16,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Admin/Account/Login";
         options.Cookie.Name = "AdminAuthCookie";
     });
-
+builder.Services.AddRefitClient<ICategoryApiClient>()
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7107/api"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
