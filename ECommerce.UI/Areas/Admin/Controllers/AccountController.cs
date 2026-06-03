@@ -45,12 +45,24 @@ namespace ECommerce.UI.Areas.Admin.Controllers
                 {
                     var handler = new JwtSecurityTokenHandler();
                     var jsonToken = handler.ReadToken(apiResponse.Token) as JwtSecurityToken;
-                    var claims = jsonToken?.Claims;
+
+                    // Mevcut claim'leri listeye çeviriyoruz ki yeni claim ekleyebilelim
+                    var claims = jsonToken?.Claims.ToList() ?? new List<Claim>();
+
+                    // EĞER API'den dönen nesnede Username varsa doğrudan onu, yoksa token içindeki değeri ekliyoruz
+                    var currentUsername = apiResponse.Username ?? jsonToken?.Claims.FirstOrDefault(c => c.Type == "unique_name" || c.Type == "name")?.Value;
+
+                    if (!string.IsNullOrEmpty(currentUsername))
+                    {
+                        // .NET'in User.Identity.Name olarak tanıyacağı Claim'i manuel ekliyoruz
+                        claims.Add(new Claim(ClaimTypes.Name, currentUsername));
+                    }
 
                     var identity = new ClaimsIdentity(claims,
                         CookieAuthenticationDefaults.AuthenticationScheme,
                         ClaimTypes.Name,
                         ClaimTypes.Role);
+
                     var principal = new ClaimsPrincipal(identity);
 
                     var authProperties = new AuthenticationProperties
