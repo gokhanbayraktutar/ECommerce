@@ -117,7 +117,7 @@ public class PaymentController : ControllerBase
             {
                 Id = ci.Id.ToString(),
                 Name = ci.Product.Name,
-                Category1 = ci.Product.CategoryId.ToString(),
+                //Category1 = ci.Product.CategoryId.ToString(),
                 ItemType = BasketItemType.PHYSICAL.ToString(),
                 Price = (ci.TotalPrice ?? 0m)
                     .ToString("0.##", CultureInfo.InvariantCulture)

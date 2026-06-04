@@ -30,6 +30,10 @@ namespace ECommerce.Infrastructure
 
         public IRepository<Favourite_Product> Favourite_Products => _favouriteProducts ??= new GenericRepository<Favourite_Product>(_context);
 
+        private IRepository<ProductCategory> _productCategories;
+        public IRepository<ProductCategory> ProductCategories => _productCategories ??= new GenericRepository<ProductCategory>(_context);
+
+
         public async Task<int> CommitAsync() => await _context.SaveChangesAsync();
         public void Dispose() => _context.Dispose();
     }

@@ -35,8 +35,8 @@ public class CartController : ControllerBase
                 {
                     id = ci.Product.Id,
                     name = ci.Product.Name,
-                    price = ci.Product.Price,
-                    picture = ci.Product.Picture
+                    price = ci.Product.Price
+                    //picture = ci.Product.Picture
                 }
             }) ?? Enumerable.Empty<object>(),
 
@@ -61,8 +61,8 @@ public class CartController : ControllerBase
                 {
                     id = ci.Product.Id,
                     name = ci.Product.Name,
-                    price = ci.Product.Price,
-                    picture = ci.Product.Picture
+                    price = ci.Product.Price
+                    //picture = ci.Product.Picture
                 }
             }).ToList()
         };

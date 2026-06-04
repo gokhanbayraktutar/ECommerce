@@ -182,7 +182,7 @@ public class CartService : ICartService
             {
                 Id = ci.Id,
                 ProductName = ci.Product?.Name,
-                Picture = ci.Product?.Picture,
+                //Picture = ci.Product?.Picture,
                 Price = ci.Price ?? 0,
                 Quantity = ci.Quantity,
                 TotalPrice = ci.TotalPrice ?? 0

@@ -12,5 +12,7 @@ namespace ECommerce.Core.Interfaces
         IRepository<CartItem> CartItems { get; }
         IRepository<Favourite_Product> Favourite_Products { get; }
         Task<int> CommitAsync();
+
+        IRepository<ProductCategory> ProductCategories { get; }
     }
 }
