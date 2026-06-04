@@ -18,16 +18,16 @@ namespace ECommerce.Infrastructure.Search
             if (string.IsNullOrWhiteSpace(query)) return Enumerable.Empty<ProductSearchDto>();
 
             var products = await _unitOfWork.Products.FindAsync(
-                p => p.Name.Contains(query),
-                p => p.Category
+                p => p.Name.Contains(query)
+                //p => p.Category
             );
 
             return products.Select(p => new ProductSearchDto
             {
                 Id = p.Id,
                 Name = p.Name,
-                CategoryName = p.Category.Name,
-                Picture = p.Picture,
+                //CategoryName = p.Category.Name,
+                //Picture = p.Picture,
                 Price = p.Price
             });
         }

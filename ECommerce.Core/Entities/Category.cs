@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Core.Entities
 {
-    public class Category
+    public class Category : BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
-        public bool ActiveStatus { get; set; }
 
         public int? ParentCategoryId { get; set; }
         public Category? ParentCategory { get; set; }

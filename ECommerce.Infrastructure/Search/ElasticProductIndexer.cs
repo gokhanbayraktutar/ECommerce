@@ -23,26 +23,26 @@ public class ElasticProductIndexer
     public async Task IndexAllAsync()
     {
         var products = await _unitOfWork.Products.FindAsync(
-            p => true,
-            p => p.Category
+            p => true
+            //p => p.Category
         );
 
-        var response = await _elasticClient.BulkAsync(b => b
-            .Index("products")
-            .IndexMany(products.Select(product => new ProductSearchDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                CategoryName = product.Category.Name,
-                Picture = product.Picture,
-                Price = product.Price
-            }))
-        );
+        //var response = await _elasticClient.BulkAsync(b => b
+        //    .Index("products")
+        //    .IndexMany(products.Select(product => new ProductSearchDto
+        //    {
+        //        Id = product.Id,
+        //        Name = product.Name,
+        //        CategoryName = product.Category.Name,
+        //        Picture = product.Picture,
+        //        Price = product.Price
+        //    }))
+        //);
 
-        if (response.Errors)
-        {
-            throw new Exception("Elastic bulk indexleme sırasında hata oluştu");
-        }
+        //if (response.Errors)
+        //{
+        //    throw new Exception("Elastic bulk indexleme sırasında hata oluştu");
+        //}
     }
 
 
