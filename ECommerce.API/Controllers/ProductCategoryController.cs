@@ -5,11 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
+
 public class ProductCategoryController : ControllerBase
 {
     private readonly IProductCategoryService _service;
 
     public ProductCategoryController(IProductCategoryService service) => _service = service;
+
+
+
 
     [HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());

@@ -18,6 +18,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddRefitClient<ICategoryApiClient>()
                 .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7107/api"));
+builder.Services.AddRefitClient<IProductCategoryApiClient>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7107/api"));
+
+builder.Services.AddRefitClient<IProductApiClient>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7107/api"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
